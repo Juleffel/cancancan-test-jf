@@ -1,0 +1,27 @@
+<%= form_with([@company, project5]) do |form| %>
+  <% if project5.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(project5.errors.count, "error") %> prohibited this project5 from being saved:</h2>
+
+      <ul>
+        <% project5.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= form.label :company_id %>
+    <%= form.text_field :company_id %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

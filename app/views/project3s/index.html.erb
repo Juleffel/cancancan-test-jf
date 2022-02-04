@@ -1,0 +1,32 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Project3s</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Company</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @project3s.each do |project3| %>
+      <tr>
+        <td><%= project3.name %></td>
+        <td><%= project3.company %></td>
+        <td><%= link_to 'Show', company_project3_path(@company, project3) %></td>
+        <td><%= link_to 'Custom member', custom_member_company_project3_path(@company, project3) %></td>
+        <td><%= link_to 'Edit', edit_company_project3_path(@company, project3) %></td>
+        <td><%= link_to 'Destroy', company_project3_path(@company, project3), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New project3', new_company_project3_path(@company) %> | 
+<%= link_to 'Back to companies', companies_path(@company) %>
+

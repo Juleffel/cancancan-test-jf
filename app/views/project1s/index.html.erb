@@ -1,0 +1,42 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Project1s</h1>
+
+<% if @company.name.include? 'owned' %>
+<p>As it's an <b>owned</b> company, we should be able to see projects, and :show / :edit / :custom_member.</p>
+<% else %>
+<p>As it's <b>not an owned</b> company, we should not be able to see any projects.</p>
+<% if action_name != "index" %>
+<p><b class="red">We should not be able to access this action.</b></p>
+<% end %>
+<% end %>
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Company</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @project1s.each do |project1| %>
+      <tr>
+        <td><%= project1.name %></td>
+        <td><%= project1.company %></td>
+        <td><%= link_to 'Show', company_project1_path(@company, project1) %></td>
+        <td><%= link_to 'Custom member', custom_member_company_project1_path(@company, project1) %></td>
+        <td><%= link_to 'Edit', edit_company_project1_path(@company, project1) %></td>
+        <td><%= link_to 'Destroy', company_project1_path(@company, project1), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Project1', new_company_project1_path(@company) %> | 
+<%= link_to 'Back to companies', companies_path(@company) %>
+

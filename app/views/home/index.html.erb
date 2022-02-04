@@ -1,0 +1,58 @@
+<h2>Rails + devise + cancancan with Nested Resources, examples of bugs and attacks.</h2>
+
+<% if alert %>
+<h3><%= alert %></h3>
+<% end %>
+
+<% if User.count == 0 %>
+You should run `rake db:seed`
+<% elsif !user_signed_in? %>
+  <p>You can login with: test1@test.com ; pwd: testpwd. <%= link_to 'Sign in', new_user_session_path %></p>.
+<% else %>
+
+<h3>Description of the app</h3>
+<p>We have a user, which belongs to multiple Companies. Each sompanies have some projects. We have 6 definitions of Project to be able to configure Abilities in different ways.</p>
+
+<p>In Projects 1/2/3, we want the user to be able to read everything, but to be able to do manage only the projects of the companies he owns.
+The abilities are defined in three different ways, which should behave the same way according to documentation:</p>
+<ul>
+<li>can :manage, Project1, company_id: user.company_ids</li>
+<li>can :manage, Project2, company: user.companies.first <i>(we could also get rid of the .first and have another bug)</i></li>
+<li>can :manage, Project3, company: { id: user.company_ids }</li>
+</ul>
+
+<p>In Projects 4/5/6, we want the user to be able to manage everything but a secret company.
+The abilities are defined in three different ways, which should behave the same way according to documentation:</p>
+<ul>
+<li>cannot :manage, Project4, company_id: secret_companies.ids</li>
+<li>cannot :manage, Project5, company: secret_companies.first <i>(we could also get rid of the .first and have another bug)</i></li>
+<li>cannot :manage, Project6, company: { id: secret_companies.ids }</li>
+</ul>
+
+<p>Those abilities definitions are the only things varying in code for these projects.</p>
+
+
+<h3>Descriptions and examples of the problems</h4>
+<h4>With project 3 / 6</h4>
+<p>Everything works as expected for project 3 / 6. All un-authorized resources are blocked and pages un-accessible when needed.
+The only problem with this solution is performances of accessible_by.
+As we are actually telling the model to check an associated model, accessible_by needs to do a join or a subquery to verify abilities, which aren't necessary when using method 1/4.</p>
+
+<h4>With project 1 / 4</h4>
+<p>In this case, accessible_by is more performant, however, when using nested resources + load_and_authorize_resource,
+the ability checked to access an action is: <b>can? :action, {company => Project}</b>.</p>
+<p>With this ability configuration, we could think the parent ID is checked, like for example 3 / 6. But this is not the case, because :company_id is recognized as a key of the child, not of the parent.</p>
+
+<p>This is a problem because:</p>
+<p>When <%= link_to "accessing a custom_collection of Project1 for a not-owned company", custom_collection_company_project1s_path(Company.where.not(id: current_user.company_ids).first) %>, we are expecting the action to be un-authorized, but it isn't.
+Hopefully, accessible_by save us from a full-on security breach by adding a scope to @projects, but the situation is really confusing,
+and if the dev doesn't use @projects in this action, he can be expecting this action to be un-authorized and create a pretty powerful breach.</p>
+<p>When <%= link_to "accessing a custom_collection of Project4 for a non secret company", custom_collection_company_project4s_path(current_user.companies.first) %>, we are expecting the action to be authorized, but it isn't.
+This is a problem because the cannot cannot be used at all with parent_id and nested resources, therefore, having to resort to solution 6, which is less performant.</p>
+
+<h4>With project 2 / 5</h4>
+<p>In this case, nothing works. This kind of ability checks are supported by cancancan and encouraged in the doc (with an object or a collection of objects), but actually not supported when using nested resources.</p>
+<p>`can? :action, {company => Project}` will always fail with an error when a rule condition uses something else than a hash.</p>
+
+<h3><%= link_to 'Explore data', companies_path %></h3>
+<% end %>
